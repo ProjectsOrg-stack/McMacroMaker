@@ -31,28 +31,36 @@ export default function EditorPage() {
     // init bridge
     const br = new Bridge()
     bridgeRef.current = br
-    br.onMessage((msg) => {
-      try {
-        const obj = typeof msg === 'string' ? JSON.parse(msg) : msg
-        if (obj.event === 'stepStart') appendLog(`> start #${obj.index}: ${obj.cmd}`)
-        else if (obj.event === 'stepDone') appendLog(`< done #${obj.index}`)
-        else if (obj.event === 'error') appendLog(`! error: ${obj.error}`)
-        else if (obj.event === 'done') {
-          appendLog('=== sequence finished ===')
-          setRunning(false)
-        } else if (obj.event === 'pong') {
-          appendLog(`bridge pong: ready=${obj.ready} platform=${obj.platform || 'unknown'}`)
-          setBridgeAvailable(Boolean(obj.ready))
+
+    // runtime-safe registration: guard & cast against incorrect import/export shapes
+    if (typeof (br as any).onMessage === 'function') {
+      ;(br as any).onMessage((msg: any) => {
+        try {
+          const obj = typeof msg === 'string' ? JSON.parse(msg) : msg
+          if (obj.event === 'stepStart') appendLog(`> start #${obj.index}: ${obj.cmd}`)
+          else if (obj.event === 'stepDone') appendLog(`< done #${obj.index}`)
+          else if (obj.event === 'error') appendLog(`! error: ${obj.error}`)
+          else if (obj.event === 'done') {
+            appendLog('=== sequence finished ===')
+            setRunning(false)
+          } else if (obj.event === 'pong') {
+            appendLog(`bridge pong: ready=${obj.ready} platform=${obj.platform || 'unknown'}`)
+            setBridgeAvailable(Boolean(obj.ready))
+          }
+        } catch (e) {
+          appendLog(String(msg))
         }
-      } catch (e) {
-        appendLog(String(msg))
-      }
-    })
+      })
+    } else {
+      console.warn('Bridge onMessage missing or not a function', br)
+      setBridgeAvailable(false)
+      setShowOnboard(true)
+    }
 
     // probe bridge on mount
     (async () => {
       try {
-        const res = await br.ping(1200)
+        const res = await (br as any).ping(1200)
         setBridgeAvailable(Boolean(res?.ready))
       } catch (e) {
         setBridgeAvailable(false)
@@ -61,7 +69,7 @@ export default function EditorPage() {
     })()
 
     return () => {
-      br.disconnect()
+      try { (br as any).disconnect() } catch {}
       bridgeRef.current = null
     }
   }, [])
@@ -145,7 +153,7 @@ export default function EditorPage() {
     }
 
     try {
-      await bridgeRef.current.sendSequence(steps)
+      await (bridgeRef.current as any).sendSequence(steps)
       // bridge will emit done event; keep running state until then
     } catch (e) {
       appendLog('Failed to run macro: ' + String(e))
@@ -154,7 +162,7 @@ export default function EditorPage() {
   }
 
   function stopMacro() {
-    bridgeRef.current?.stop()
+    (bridgeRef.current as any)?.stop()
     appendLog('=== stop requested ===')
     setRunning(false)
   }
@@ -162,7 +170,7 @@ export default function EditorPage() {
   async function checkBridge() {
     try {
       setBridgeAvailable(null)
-      const res = await bridgeRef.current!.ping(1200)
+      const res = await (bridgeRef.current as any)!.ping(1200)
       setBridgeAvailable(Boolean(res?.ready))
       if (!res?.ready) setShowOnboard(true)
     } catch (e) {
