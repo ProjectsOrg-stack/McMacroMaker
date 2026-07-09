@@ -31,7 +31,7 @@ export default function EditorPage() {
     // init bridge
     const br = new Bridge()
     bridgeRef.current = br
-    br.onMessage((msg) => {
+    ;(br as any).onMessage((msg: any) => {
       try {
         const obj = typeof msg === 'string' ? JSON.parse(msg) : msg
         if (obj.event === 'stepStart') appendLog(`> start #${obj.index}: ${obj.cmd}`)
@@ -52,7 +52,7 @@ export default function EditorPage() {
     // probe bridge on mount
     (async () => {
       try {
-        const res = await br.ping(1200)
+        const res = await (br as any).ping(1200)
         setBridgeAvailable(Boolean(res?.ready))
       } catch (e) {
         setBridgeAvailable(false)
@@ -61,7 +61,7 @@ export default function EditorPage() {
     })()
 
     return () => {
-      br.disconnect()
+      (br as any).disconnect()
       bridgeRef.current = null
     }
   }, [])
@@ -145,7 +145,7 @@ export default function EditorPage() {
     }
 
     try {
-      await bridgeRef.current.sendSequence(steps)
+      await (bridgeRef.current as any).sendSequence(steps)
       // bridge will emit done event; keep running state until then
     } catch (e) {
       appendLog('Failed to run macro: ' + String(e))
@@ -154,7 +154,7 @@ export default function EditorPage() {
   }
 
   function stopMacro() {
-    bridgeRef.current?.stop()
+    (bridgeRef.current as any)?.stop()
     appendLog('=== stop requested ===')
     setRunning(false)
   }
@@ -162,7 +162,7 @@ export default function EditorPage() {
   async function checkBridge() {
     try {
       setBridgeAvailable(null)
-      const res = await bridgeRef.current!.ping(1200)
+      const res = await (bridgeRef.current as any)!.ping(1200)
       setBridgeAvailable(Boolean(res?.ready))
       if (!res?.ready) setShowOnboard(true)
     } catch (e) {
