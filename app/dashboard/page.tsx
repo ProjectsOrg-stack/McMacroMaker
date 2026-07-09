@@ -1,5 +1,8 @@
+'use client'
+
 import Link from 'next/link'
 import { useAuth } from '../../components/AuthProvider'
+import { useEffect, useState } from 'react'
 
 export default function DashboardPage() {
   const { user, signOut } = useAuth()
@@ -32,11 +35,23 @@ export default function DashboardPage() {
 }
 
 function MacroList({ userId }: { userId: string }) {
-  // Read macros from localStorage
-  if (typeof window === 'undefined') return null
-  const key = `macros:${userId}`
-  const raw = localStorage.getItem(key) || '[]'
-  const macros = JSON.parse(raw)
+  const [macros, setMacros] = useState<any[] | null>(null)
+
+  useEffect(() => {
+    if (!userId) return
+    try {
+      const key = `macros:${userId}`
+      const raw = localStorage.getItem(key) || '[]'
+      const parsed = JSON.parse(raw)
+      setMacros(parsed)
+    } catch (e) {
+      setMacros([])
+    }
+  }, [userId])
+
+  if (macros === null) {
+    return <div>Loading...</div>
+  }
 
   if (macros.length === 0) {
     return <p>No macros yet. Create one ↗</p>
