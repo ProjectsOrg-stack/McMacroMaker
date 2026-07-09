@@ -184,7 +184,7 @@ export default function EditorPage() {
   }
 
   return (
-    <main className="min-h-screen p-6">
+    <main className="min-h-screen p-6 bg-white text-black">
       <div className="max-w-5xl mx-auto">
         <div className="flex gap-4 mb-4">
           <input value={title} onChange={e => setTitle(e.target.value)} placeholder="Macro title" className="flex-1 p-2 border rounded" />
@@ -192,7 +192,7 @@ export default function EditorPage() {
         </div>
         <div className="flex items-center gap-4 mb-2">
           <div>Bridge status: {bridgeAvailable === null ? 'checking...' : bridgeAvailable ? 'available' : 'not available'}</div>
-          <button onClick={checkBridge} className="px-2 py-1 border rounded">Check bridge</button>
+          <button onClick={checkBridge} className="px-2 py-1 border rounded bg-gray-100">Check bridge</button>
           <label className="ml-auto inline-flex items-center gap-2"><input type="checkbox" checked={demoMode} onChange={(e)=>setDemoMode(e.target.checked)} /> Demo mode</label>
         </div>
 
@@ -200,64 +200,64 @@ export default function EditorPage() {
           <MonacoEditor height="100%" defaultLanguage="plaintext" value={code} onChange={(v) => setCode(v || '')} />
         </div>
         <div className="flex gap-2 mt-4">
-          <button onClick={saveMacro} className="px-3 py-1 bg-blue-600 text-white rounded">Save</button>
-          <button onClick={runMacro} disabled={running} className="px-3 py-1 bg-green-600 text-white rounded">Run</button>
+          <button onClick={saveMacro} className="px-3 py-1 bg-blue-700 text-white rounded">Save</button>
+          <button onClick={runMacro} disabled={running} className="px-3 py-1 bg-green-700 text-white rounded">Run</button>
           <button onClick={stopMacro} disabled={!running} className="px-3 py-1 bg-red-600 text-white rounded">Stop</button>
         </div>
 
         <div className="mt-6">
           <h3 className="font-semibold mb-2">Execution Log</h3>
-          <div className="h-48 overflow-auto p-2 border bg-black text-white text-xs">
-            {log.length === 0 ? <div className="text-gray-400">No activity yet</div> : log.map((l, i) => <div key={i} className="whitespace-pre-wrap">{l}</div>)}
+          <div className="h-48 overflow-auto p-2 border bg-gray-100 text-black text-xs">
+            {log.length === 0 ? <div className="text-gray-600">No activity yet</div> : log.map((l, i) => <div key={i} className="whitespace-pre-wrap">{l}</div>)}
           </div>
         </div>
 
-        <div className="mt-6 text-sm text-gray-600">
+        <div className="mt-6 text-sm text-gray-800">
           <p>Macro DSL: one command per line. Special line: <code>DELAY &lt;ms&gt;</code> sets a pause. Examples:</p>
-          <pre className="bg-gray-100 dark:bg-gray-800 p-2 rounded text-xs">CHAT /say Hello\nDELAY 200\nKEY TAP e\nMOUSE_MOVE 960 540\nMOUSE_CLICK left</pre>
+          <pre className="bg-gray-100 p-2 rounded text-xs">CHAT /say Hello\nDELAY 200\nKEY TAP e\nMOUSE_MOVE 960 540\nMOUSE_CLICK left</pre>
         </div>
       </div>
 
       {showOnboard && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-white dark:bg-gray-900 p-6 rounded max-w-2xl w-full">
+        <div className="fixed inset-0 bg-black/20 flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded max-w-2xl w-full text-black shadow-lg">
             <h2 className="text-lg font-bold mb-2">Local bridge not detected</h2>
-            <p className="mb-4">To run macros that simulate mouse/keyboard you need a small local bridge running on your computer. Choose your platform and follow the steps below. You can also try demo mode to simulate execution in the browser.</p>
+            <p className="mb-4 text-gray-800">To run macros that simulate mouse/keyboard you need a small local bridge running on your computer. Choose your platform and follow the steps below. You can also try demo mode to simulate execution in the browser.</p>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="p-3 border rounded">
+              <div className="p-3 border rounded bg-gray-50">
                 <h3 className="font-semibold">macOS (recommended)</h3>
-                <ol className="list-decimal pl-5 mt-2 text-sm">
+                <ol className="list-decimal pl-5 mt-2 text-sm text-gray-800">
                   <li>Install Node.js (v18+). Use <code>brew install node</code> or from nodejs.org.</li>
                   <li>Install build tools: <code>xcode-select --install</code></li>
                   <li>Open a terminal and run:</li>
                 </ol>
-                <pre className="bg-gray-100 p-2 rounded text-xs mt-2">cd {`<repo-root>/bridge`}\nnpm install\nnpm start</pre>
+                <pre className="bg-white p-2 rounded text-xs mt-2 border">cd {`<repo-root>/bridge`}\nnpm install\nnpm start</pre>
                 <div className="flex gap-2 mt-2">
-                  <button onClick={() => copyToClipboard(`cd bridge && npm install && npm start`)} className="px-2 py-1 border rounded text-sm">Copy commands</button>
+                  <button onClick={() => copyToClipboard(`cd bridge && npm install && npm start`)} className="px-2 py-1 border rounded text-sm bg-gray-100">Copy commands</button>
                 </div>
-                <p className="text-xs mt-2">Grant Accessibility: System Settings → Privacy & Security → Accessibility → add Terminal or Node.</p>
+                <p className="text-xs mt-2 text-gray-600">Grant Accessibility: System Settings → Privacy & Security → Accessibility → add Terminal or Node.</p>
               </div>
 
-              <div className="p-3 border rounded">
+              <div className="p-3 border rounded bg-gray-50">
                 <h3 className="font-semibold">Windows</h3>
-                <ol className="list-decimal pl-5 mt-2 text-sm">
+                <ol className="list-decimal pl-5 mt-2 text-sm text-gray-800">
                   <li>Install Node.js (v18+).</li>
                   <li>Open a Developer Command Prompt if robotjs needs build tools (install Build Tools for Visual Studio).</li>
                   <li>Run:</li>
                 </ol>
-                <pre className="bg-gray-100 p-2 rounded text-xs mt-2">cd bridge\nnpm install\nnpm start</pre>
+                <pre className="bg-white p-2 rounded text-xs mt-2 border">cd bridge\nnpm install\nnpm start</pre>
                 <div className="flex gap-2 mt-2">
-                  <button onClick={() => copyToClipboard(`cd bridge && npm install && npm start`)} className="px-2 py-1 border rounded text-sm">Copy commands</button>
+                  <button onClick={() => copyToClipboard(`cd bridge && npm install && npm start`)} className="px-2 py-1 border rounded text-sm bg-gray-100">Copy commands</button>
                 </div>
-                <p className="text-xs mt-2">You may need to run the terminal as Administrator for input access or driver installs.</p>
+                <p className="text-xs mt-2 text-gray-600">You may need to run the terminal as Administrator for input access or driver installs.</p>
               </div>
             </div>
 
             <div className="mt-4 flex gap-2">
-              <button onClick={() => { setShowOnboard(false); }} className="px-3 py-1 border rounded">Close</button>
+              <button onClick={() => { setShowOnboard(false); }} className="px-3 py-1 border rounded bg-white">Close</button>
               <button onClick={() => checkBridge()} className="px-3 py-1 bg-blue-600 text-white rounded">I installed it, check connection</button>
-              <button onClick={() => { setDemoMode(true); setShowOnboard(false); }} className="px-3 py-1 bg-gray-700 text-white rounded">Use demo mode</button>
+              <button onClick={() => { setDemoMode(true); setShowOnboard(false); }} className="px-3 py-1 bg-gray-300 text-black rounded">Use demo mode</button>
             </div>
 
           </div>
