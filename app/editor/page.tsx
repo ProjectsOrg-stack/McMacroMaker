@@ -29,8 +29,9 @@ export default function EditorPage() {
 
   useEffect(() => {
     // init bridge
-    bridgeRef.current = new Bridge()
-    bridgeRef.current.onMessage((msg) => {
+    const br = new Bridge()
+    bridgeRef.current = br
+    br.onMessage((msg) => {
       try {
         const obj = typeof msg === 'string' ? JSON.parse(msg) : msg
         if (obj.event === 'stepStart') appendLog(`> start #${obj.index}: ${obj.cmd}`)
@@ -51,7 +52,7 @@ export default function EditorPage() {
     // probe bridge on mount
     (async () => {
       try {
-        const res = await bridgeRef.current!.ping(1200)
+        const res = await br.ping(1200)
         setBridgeAvailable(Boolean(res?.ready))
       } catch (e) {
         setBridgeAvailable(false)
@@ -60,7 +61,7 @@ export default function EditorPage() {
     })()
 
     return () => {
-      bridgeRef.current?.disconnect()
+      br.disconnect()
       bridgeRef.current = null
     }
   }, [])
