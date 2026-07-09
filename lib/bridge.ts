@@ -91,6 +91,5 @@ export class Bridge {
   }
 }
 
-// Provide both default and named exports so consumers can import either style.
+// Provide a default export so consumers can import either style.
 export default Bridge
-export { Bridge }
