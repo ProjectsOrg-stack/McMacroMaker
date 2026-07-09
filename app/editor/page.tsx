@@ -5,7 +5,7 @@ import { useEffect, useState, useRef } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { useAuth } from '../../components/AuthProvider'
 import { v4 as uuidv4 } from 'uuid'
-import { Bridge } from '../../lib/bridge'
+import Bridge from '../../lib/bridge'
 
 const MonacoEditor = dynamic(() => import('@monaco-editor/react'), { ssr: false })
 

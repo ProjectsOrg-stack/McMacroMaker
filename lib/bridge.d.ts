@@ -1,6 +1,6 @@
 export declare type BridgeMessageHandler = (msg: any) => void;
 
-export declare class Bridge {
+declare class Bridge {
   url: string;
   socket: WebSocket | null;
   messageHandlers: BridgeMessageHandler[];
@@ -19,3 +19,6 @@ export declare class Bridge {
 
   ping(timeoutMs?: number): Promise<any>;
 }
+
+export default Bridge;
+export { Bridge };
