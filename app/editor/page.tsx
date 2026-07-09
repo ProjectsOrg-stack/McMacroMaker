@@ -224,11 +224,17 @@ export default function EditorPage() {
             <h2 className="text-lg font-bold mb-2">Local bridge not detected</h2>
             <p className="mb-4 text-gray-800">To run macros that simulate mouse/keyboard you need a small local bridge running on your computer. Choose your platform and follow the steps below. You can also try demo mode to simulate execution in the browser.</p>
 
+            <div className="mb-4 p-3 border rounded bg-yellow-50">
+              <h4 className="font-semibold mb-1">Quick note — you don't need to clone the whole GitHub repo</h4>
+              <p className="text-sm text-gray-800">If you just want to run the bridge locally, you can download only the bridge folder and run it. Node 18+ is required; Node v26 (your version) is supported. Copy–paste the one-liner below in Terminal:</p>
+              <pre className="bg-white p-2 rounded text-xs mt-2 border">npx degit ProjectsOrg-stack/McMacroMaker/bridge bridge && cd bridge && npm install && npm start</pre>
+            </div>
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="p-3 border rounded bg-gray-50">
                 <h3 className="font-semibold">macOS (recommended)</h3>
                 <ol className="list-decimal pl-5 mt-2 text-sm text-gray-800">
-                  <li>Install Node.js (v18+). Use <code>brew install node</code> or from nodejs.org.</li>
+                  <li>Install Node.js (v18+). Use <code>brew install node</code> or download from nodejs.org.</li>
                   <li>Install build tools: <code>xcode-select --install</code></li>
                   <li>Open a terminal and run:</li>
                 </ol>
