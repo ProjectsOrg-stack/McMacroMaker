@@ -170,10 +170,27 @@ export default function EditorPage() {
   async function checkBridge() {
     try {
       setBridgeAvailable(null)
-      const res = await (bridgeRef.current as any)!.ping(1200)
+      // ensure we have a bridge instance; create one if needed
+      if (!bridgeRef.current) {
+        const br = new Bridge()
+        bridgeRef.current = br
+        // register handler if possible so ping can receive pong
+        if (typeof (br as any).onMessage === 'function') {
+          ;(br as any).onMessage((msg: any) => {
+            try {
+              const obj = typeof msg === 'string' ? JSON.parse(msg) : msg
+              if (obj.event === 'pong') appendLog(`bridge pong: ready=${obj.ready} platform=${obj.platform || 'unknown'}`)
+            } catch (e) { /* ignore */ }
+          })
+        }
+      }
+
+      appendLog('Checking bridge...')
+      const res = await (bridgeRef.current as any).ping(1200)
       setBridgeAvailable(Boolean(res?.ready))
       if (!res?.ready) setShowOnboard(true)
     } catch (e) {
+      console.error('checkBridge error', e)
       setBridgeAvailable(false)
       setShowOnboard(true)
     }
