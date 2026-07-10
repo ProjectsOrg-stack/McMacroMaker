@@ -1,0 +1,12 @@
+{
+  "name": "mcmacromaker-bridge",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "start": "node bridge-robotjs.js"
+  },
+  "dependencies": {
+    "robotjs": "^0.6.0",
+    "ws": "^8.14.2"
+  }
+}
