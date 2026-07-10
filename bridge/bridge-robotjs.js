@@ -6,6 +6,11 @@
 //   npm install
 //   node bridge-robotjs.js
 
+const util = require('util');
+if (!util.isObject) {
+  util.isObject = function(arg) { return typeof arg === 'object' && arg !== null; };
+}
+
 const WebSocket = require('ws');
 let robot
 try {
