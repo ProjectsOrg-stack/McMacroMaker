@@ -59,11 +59,11 @@ body {
            transition-all duration-200 active:scale-[0.98];
   }
   .card {
-    @apply bg-bg-surface border border-border rounded-xl p-5
+    @apply bg-bg-elevated border border-border-light rounded-xl p-5
            transition-all duration-200;
   }
   .card-hover {
-    @apply card hover:-translate-y-0.5 hover:border-border-light hover:shadow-card;
+    @apply card hover:-translate-y-0.5 hover:border-primary/30 hover:shadow-card;
   }
   .input-field {
     @apply w-full px-3.5 py-2.5 text-sm text-text bg-bg-surface border border-border rounded-lg
