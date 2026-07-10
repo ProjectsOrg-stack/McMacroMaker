@@ -21,6 +21,18 @@ export interface Macro {
   updated_at: string
 }
 
+export type ShortcutAction = 'run' | 'save' | 'stop' | 'checkBridge' | 'toggleDemo'
+
+export interface ShortcutBinding {
+  action: ShortcutAction
+  label: string
+  key: string
+  ctrl: boolean
+  shift: boolean
+  alt: boolean
+  meta: boolean
+}
+
 export type LogLevel = 'info' | 'error' | 'success' | 'warn'
 
 export interface LogEntry {

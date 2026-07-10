@@ -6,6 +6,7 @@ import { useSearchParams, useRouter } from 'next/navigation'
 import { useAuth } from '../../components/AuthProvider'
 import { useBridge } from '../../hooks/useBridge'
 import { useMacros } from '../../hooks/useMacros'
+import { useShortcuts } from '../../hooks/useShortcuts'
 import { parseLinesToSteps, DEFAULT_MACRO } from '../../lib/parser'
 import type { LogEntry } from '../../lib/types'
 
@@ -15,6 +16,7 @@ import { ActionButtons } from '../../components/editor/ActionButtons'
 import { OnboardPanel } from '../../components/editor/OnboardPanel'
 import { ExecutionLog } from '../../components/editor/ExecutionLog'
 import { MacroExamplesTab } from '../../components/editor/MacroExamplesTab'
+import { ShortcutSettings } from '../../components/editor/ShortcutSettings'
 
 const MonacoEditor = dynamic(() => import('@monaco-editor/react'), { ssr: false })
 
@@ -35,6 +37,7 @@ export default function EditorPage() {
   )
   const [showOnboard, setShowOnboard] = useState(false)
   const [activeTab, setActiveTab] = useState<'editor' | 'examples'>('editor')
+  const [shortcutsOpen, setShortcutsOpen] = useState(false)
   const loadedRef = useRef(false)
 
   const appendLog = useCallback((message: string, level: LogEntry['level'] = 'info') => {
@@ -124,6 +127,14 @@ export default function EditorPage() {
     setRunning(false)
   }
 
+  const { bindings, updateBinding, resetDefaults } = useShortcuts({
+    run: () => { if (!running) handleRun() },
+    save: () => handleSave(),
+    stop: () => { if (running) handleStop() },
+    checkBridge: () => handleCheckBridge(),
+    toggleDemo: () => setDemoMode(prev => !prev),
+  })
+
   function handleInsertExample(exampleCode: string) {
     setCode(exampleCode)
     setActiveTab('editor')
@@ -147,9 +158,22 @@ export default function EditorPage() {
               {macroId ? 'Edit Macro' : 'New Macro'}
             </h1>
           </div>
-          {user && (
-            <span className="text-xs text-muted">{user.email || user.id}</span>
-          )}
+          <div className="flex items-center gap-3">
+            {user && (
+              <span className="text-xs text-muted">{user.email || user.id}</span>
+            )}
+            <button
+              onClick={() => setShortcutsOpen(true)}
+              aria-label="Keyboard shortcuts"
+              title="Keyboard shortcuts"
+              className="p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-md transition-colors"
+            >
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+              </svg>
+            </button>
+          </div>
         </div>
       </header>
 
@@ -261,6 +285,14 @@ export default function EditorPage() {
           </div>
         </div>
       </div>
+
+      <ShortcutSettings
+        bindings={bindings}
+        onUpdate={updateBinding}
+        onReset={resetDefaults}
+        open={shortcutsOpen}
+        onClose={() => setShortcutsOpen(false)}
+      />
     </main>
   )
 }
