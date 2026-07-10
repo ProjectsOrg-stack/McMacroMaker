@@ -22,7 +22,7 @@ export function ShortcutSettings({ bindings, onUpdate, onReset, open, onClose }:
       if (['Control', 'Shift', 'Alt', 'Meta'].includes(e.key)) return
       e.preventDefault()
       e.stopPropagation()
-      onUpdate(recording, {
+      onUpdate(recording!, {
         key: e.key,
         ctrl: e.ctrlKey,
         shift: e.shiftKey,
