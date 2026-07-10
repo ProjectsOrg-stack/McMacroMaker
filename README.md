@@ -18,7 +18,7 @@ The bridge is a small Node.js WebSocket server that simulates keyboard/mouse inp
 **One-liner install (macOS / Linux / Windows):**
 
 ```bash
-npx degit ProjectsOrg-stack/McMacroMaker/bridge bridge && cd bridge && npm install && npm start
+cd bridge && npm install && npm start
 ```
 
 **Requirements:**

@@ -18,7 +18,7 @@ export function OnboardPanel({ onEnableDemo, onCheckBridge }: OnboardPanelProps)
     } catch { /* no-op */ }
   }
 
-  const oneLiner = 'npx degit ProjectsOrg-stack/McMacroMaker/bridge bridge && cd bridge && npm install && npm start'
+  const oneLiner = 'cd bridge && npm install && npm start'
 
   return (
     <div className="p-4 bg-amber-50 border border-amber-200 rounded-lg space-y-4">
