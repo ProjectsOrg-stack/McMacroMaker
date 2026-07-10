@@ -30,7 +30,7 @@ wss.on('connection', (ws) => {
 
       if (msg.type === 'ping') {
         ws.send(JSON.stringify({ event: 'pong', ready: !!robot, platform: process.platform, note: robot ? 'robotjs loaded' : 'robotjs missing' }))
-        continue
+        return
       }
 
       if (msg.type === 'stop') {
@@ -42,7 +42,7 @@ wss.on('connection', (ws) => {
       if (msg.type === 'sequence' && Array.isArray(msg.steps)) {
         if (!robot) {
           ws.send(JSON.stringify({ event: 'error', error: 'automation library not available on bridge (robotjs missing)' }))
-          continue
+          return
         }
         currentRun = { cancelled: false };
         const steps = msg.steps;
