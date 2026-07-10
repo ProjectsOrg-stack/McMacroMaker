@@ -25,7 +25,8 @@ wss.on('connection', (ws) => {
 
   ws.on('message', async (data) => {
     try {
-      const msg = typeof data === 'string' ? JSON.parse(data) : data;
+      const raw = typeof data === 'string' ? data : data.toString('utf-8');
+      const msg = JSON.parse(raw);
       if (!msg) return;
 
       if (msg.type === 'ping') {
