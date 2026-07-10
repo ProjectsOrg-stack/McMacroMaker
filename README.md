@@ -17,8 +17,10 @@ The bridge is a small Node.js WebSocket server that simulates keyboard/mouse inp
 
 **One-liner install (macOS / Linux / Windows):**
 
+This downloads only the bridge folder — no need to clone the full repo:
+
 ```bash
-cd bridge && npm install && npm start
+npx degit ProjectsOrg-stack/McMacroMaker/bridge bridge && cd bridge && npm install && npm start
 ```
 
 **Requirements:**
@@ -26,7 +28,7 @@ cd bridge && npm install && npm start
 - macOS: `xcode-select --install` for build tools
 - Windows: Visual Studio C++ Build Tools if robotjs needs to compile
 
-**Manual setup:**
+**Already have the repo cloned?**
 
 ```bash
 cd bridge

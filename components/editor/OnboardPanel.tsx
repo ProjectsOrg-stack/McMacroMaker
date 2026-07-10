@@ -18,7 +18,7 @@ export function OnboardPanel({ onEnableDemo, onCheckBridge }: OnboardPanelProps)
     } catch { /* no-op */ }
   }
 
-  const oneLiner = 'cd bridge && npm install && npm start'
+  const oneLiner = 'npx degit ProjectsOrg-stack/McMacroMaker/bridge bridge && cd bridge && npm install && npm start'
 
   return (
     <div className="p-4 bg-amber-50 border border-amber-200 rounded-lg space-y-4">
@@ -31,6 +31,7 @@ export function OnboardPanel({ onEnableDemo, onCheckBridge }: OnboardPanelProps)
 
       <div className="bg-white border border-amber-200 rounded-lg p-3">
         <p className="text-xs font-medium text-gray-700 mb-2">Quick start (Node 18+ required):</p>
+        <p className="text-[10px] text-gray-500 mb-1">Run this in any terminal — it downloads only the bridge folder, no need to clone the full repo.</p>
         <div className="flex items-start gap-2">
           <code className="flex-1 text-xs bg-gray-50 p-2 rounded font-mono break-all select-all">
             {oneLiner}
@@ -56,7 +57,7 @@ export function OnboardPanel({ onEnableDemo, onCheckBridge }: OnboardPanelProps)
             <li>Grant Accessibility in System Settings</li>
           </ol>
           <button
-            onClick={() => copyText('cd bridge && npm install && npm start', 'mac')}
+            onClick={() => copyText(oneLiner, 'mac')}
             className="mt-2 text-xs text-primary hover:underline"
           >
             {copied === 'mac' ? 'Copied!' : 'Copy commands'}
@@ -71,7 +72,7 @@ export function OnboardPanel({ onEnableDemo, onCheckBridge }: OnboardPanelProps)
             <li>Run terminal as Administrator</li>
           </ol>
           <button
-            onClick={() => copyText('cd bridge && npm install && npm start', 'win')}
+            onClick={() => copyText(oneLiner, 'win')}
             className="mt-2 text-xs text-primary hover:underline"
           >
             {copied === 'win' ? 'Copied!' : 'Copy commands'}
