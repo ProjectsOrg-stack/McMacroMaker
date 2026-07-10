@@ -2,35 +2,40 @@
 
 interface ActionButtonsProps {
   running: boolean
+  saving?: boolean
   onSave: () => void
   onRun: () => void
   onStop: () => void
 }
 
-export function ActionButtons({ running, onSave, onRun, onStop }: ActionButtonsProps) {
+export function ActionButtons({ running, saving, onSave, onRun, onStop }: ActionButtonsProps) {
   return (
     <div className="flex gap-2">
       <button
         onClick={onSave}
+        disabled={saving}
         aria-label="Save macro"
-        className="flex-1 px-4 py-2 text-sm font-medium text-white bg-primary rounded-lg
-                   hover:bg-primary-600 focus:outline-none focus:ring-2 focus:ring-primary/40
-                   transition-colors"
+        className="btn-primary flex-1"
       >
         <span className="flex items-center justify-center gap-1.5">
-          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" />
-          </svg>
-          Save
+          {saving ? (
+            <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth={4} />
+              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
+            </svg>
+          ) : (
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" />
+            </svg>
+          )}
+          {saving ? 'Saving...' : 'Save'}
         </span>
       </button>
       <button
         onClick={onRun}
         disabled={running}
         aria-label="Run macro"
-        className="flex-1 px-4 py-2 text-sm font-medium text-white bg-success rounded-lg
-                   hover:bg-success-600 focus:outline-none focus:ring-2 focus:ring-success/40
-                   disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+        className="btn-accent flex-1"
       >
         <span className="flex items-center justify-center gap-1.5">
           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -44,9 +49,7 @@ export function ActionButtons({ running, onSave, onRun, onStop }: ActionButtonsP
         onClick={onStop}
         disabled={!running}
         aria-label="Stop macro"
-        className="px-4 py-2 text-sm font-medium text-white bg-danger rounded-lg
-                   hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-danger/40
-                   disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+        className="btn-danger"
       >
         <span className="flex items-center justify-center gap-1.5">
           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>

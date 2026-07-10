@@ -40,14 +40,13 @@ export function MacroExamplesTab({ onInsert }: MacroExamplesTabProps) {
         <button
           key={i}
           onClick={() => onInsert(ex.code)}
-          className="w-full text-left p-2.5 border border-gray-200 rounded-lg
-                     hover:border-primary/40 hover:bg-blue-50/50 transition-colors group"
+          className="card-hover w-full text-left p-2.5 group"
         >
-          <div className="text-sm font-medium text-gray-800 group-hover:text-primary">
+          <div className="text-sm font-medium text-text group-hover:text-primary">
             {ex.name}
           </div>
           <div className="text-xs text-muted mt-0.5">{ex.description}</div>
-          <pre className="text-[10px] text-gray-500 mt-1 font-mono whitespace-pre-wrap">
+          <pre className="text-[10px] text-faint mt-1 font-mono whitespace-pre-wrap">
             {ex.code}
           </pre>
         </button>

@@ -10,28 +10,26 @@ interface BridgeStatusProps {
 }
 
 const statusConfig: Record<BridgeStatusType, { color: string; label: string }> = {
-  disconnected: { color: 'bg-gray-400', label: 'Disconnected' },
-  connecting:   { color: 'bg-yellow-400 animate-pulse', label: 'Connecting...' },
-  available:    { color: 'bg-green-500', label: 'Connected' },
-  unavailable:  { color: 'bg-red-500', label: 'Not Available' },
+  disconnected: { color: 'bg-text-faint', label: 'Disconnected' },
+  connecting:   { color: 'bg-sand animate-pulse', label: 'Connecting...' },
+  available:    { color: 'bg-accent', label: 'Connected' },
+  unavailable:  { color: 'bg-danger', label: 'Not Available' },
 }
 
 export function BridgeStatus({ status, demoMode, onCheck, onToggleDemo }: BridgeStatusProps) {
   const cfg = statusConfig[status]
 
   return (
-    <div className="p-3 bg-panel border border-gray-200 rounded-lg space-y-3">
+    <div className="p-3 bg-surface border border-border rounded-lg space-y-3">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <span className={`inline-block w-2.5 h-2.5 rounded-full ${cfg.color}`} aria-hidden="true" />
-          <span className="text-sm font-medium">Bridge: {cfg.label}</span>
+          <span className="text-sm font-medium text-text">Bridge: {cfg.label}</span>
         </div>
         <button
           onClick={onCheck}
           aria-label="Check bridge connection"
-          className="px-3 py-1 text-xs font-medium border border-gray-300 rounded-lg
-                     hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-primary/40
-                     transition-colors"
+          className="btn-ghost px-3 py-1 text-xs font-medium"
         >
           Check
         </button>
@@ -41,7 +39,7 @@ export function BridgeStatus({ status, demoMode, onCheck, onToggleDemo }: Bridge
           type="checkbox"
           checked={demoMode}
           onChange={e => onToggleDemo(e.target.checked)}
-          className="w-4 h-4 rounded border-gray-300 text-primary focus:ring-primary/40"
+          className="w-4 h-4 rounded border-border text-primary focus:ring-primary/40"
         />
         <span className="text-sm text-muted">Demo mode (simulate locally)</span>
       </label>

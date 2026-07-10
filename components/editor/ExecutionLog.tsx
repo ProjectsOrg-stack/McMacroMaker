@@ -52,12 +52,12 @@ export function ExecutionLog({ entries, onClear }: ExecutionLogProps) {
   return (
     <div className="space-y-2">
       <div className="flex items-center justify-between">
-        <h3 className="text-sm font-semibold text-gray-700">Execution Log</h3>
+        <h3 className="text-sm font-semibold text-text">Execution Log</h3>
         <div className="flex gap-1">
           <button
             onClick={downloadLogs}
             aria-label="Download logs"
-            className="p-1 text-gray-400 hover:text-gray-600 transition-colors"
+            className="p-1 text-faint hover:text-text transition-colors"
             title="Download logs"
           >
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -67,7 +67,7 @@ export function ExecutionLog({ entries, onClear }: ExecutionLogProps) {
           <button
             onClick={onClear}
             aria-label="Clear logs"
-            className="p-1 text-gray-400 hover:text-gray-600 transition-colors"
+            className="p-1 text-faint hover:text-text transition-colors"
             title="Clear"
           >
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -83,7 +83,7 @@ export function ExecutionLog({ entries, onClear }: ExecutionLogProps) {
             key={f}
             onClick={() => setFilter(f)}
             className={`px-2 py-0.5 text-[10px] font-medium rounded transition-colors
-              ${filter === f ? 'bg-primary text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}
+              ${filter === f ? 'bg-primary text-white' : 'bg-bg-hover text-muted hover:text-text'}`}
           >
             {f === 'all' ? 'All' : f.charAt(0).toUpperCase() + f.slice(1)}
           </button>
@@ -96,14 +96,14 @@ export function ExecutionLog({ entries, onClear }: ExecutionLogProps) {
         role="log"
         aria-live="polite"
         aria-label="Execution log output"
-        className="h-48 overflow-auto p-3 rounded-lg text-xs font-mono bg-codeBg text-gray-300"
+        className="h-48 overflow-auto p-3 rounded-lg text-xs font-mono bg-codeBg text-text"
       >
         {filtered.length === 0 ? (
-          <div className="text-gray-500 italic">No activity yet</div>
+          <div className="text-faint italic">No activity yet</div>
         ) : (
           filtered.map((entry, i) => (
             <div key={i} className="whitespace-pre-wrap leading-5">
-              <span className="text-gray-500">{entry.timestamp}</span>{' '}
+              <span className="text-faint">{entry.timestamp}</span>{' '}
               <span className={levelColors[entry.level]}>{entry.message}</span>
             </div>
           ))

@@ -1,8 +1,9 @@
 'use client'
 
 import dynamic from 'next/dynamic'
-import { useState, useCallback, useRef } from 'react'
+import { useState, useCallback, useRef, useEffect } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
+import Link from 'next/link'
 import { useAuth } from '../../components/AuthProvider'
 import { useBridge } from '../../hooks/useBridge'
 import { useMacros } from '../../hooks/useMacros'
@@ -33,6 +34,7 @@ export default function EditorPage() {
   const [description, setDescription] = useState('')
   const [code, setCode] = useState(DEFAULT_MACRO)
   const [running, setRunning] = useState(false)
+  const [saving, setSaving] = useState(false)
   const [logs, setLogs] = useState<LogEntry[]>([])
   const [demoMode, setDemoMode] = useState(
     process.env.NEXT_PUBLIC_DEMO_MODE === 'true'
@@ -58,16 +60,17 @@ export default function EditorPage() {
 
   const bridge = useBridge(bridgeLogHandler)
 
-  // Load macro from localStorage on first render
-  if (!loadedRef.current && user && macroId) {
+  useEffect(() => {
+    if (loadedRef.current || !user || !macroId) return
     loadedRef.current = true
-    const found = getMacro(macroId)
-    if (found) {
-      setTitle(found.title)
-      setDescription(found.description)
-      setCode(found.code)
-    }
-  }
+    getMacro(macroId).then(found => {
+      if (found) {
+        setTitle(found.title)
+        setDescription(found.description)
+        setCode(found.code)
+      }
+    })
+  }, [user, macroId, getMacro])
 
   async function handleCheckBridge() {
     try {
@@ -79,14 +82,20 @@ export default function EditorPage() {
     }
   }
 
-  function handleSave() {
+  async function handleSave() {
     if (!user) {
       appendLog('Sign in to save macros', 'error')
       return
     }
-    persistMacro({ id: macroId, title: title || 'Untitled', description, code })
-    appendLog('Macro saved', 'success')
-    router.push('/dashboard')
+    setSaving(true)
+    const saved = await persistMacro({ id: macroId, title: title || 'Untitled', description, code })
+    setSaving(false)
+    if (saved) {
+      appendLog('Macro saved', 'success')
+      router.push('/dashboard')
+    } else {
+      appendLog('Failed to save macro', 'error')
+    }
   }
 
   async function handleRun() {
@@ -174,32 +183,31 @@ export default function EditorPage() {
   }
 
   return (
-    <main className="min-h-screen bg-gray-50 font-sans">
+    <main className="min-h-screen bg-bg">
       {/* Top bar */}
-      <header className="bg-white border-b border-gray-200 px-4 py-3">
-        <div className="max-w-[1600px] mx-auto flex items-center justify-between">
+      <header className="border-b border-border/50 bg-bg-surface/50 backdrop-blur-sm sticky top-0 z-40">
+        <div className="max-w-[1600px] mx-auto px-4 py-3 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <a
+            <Link
               href="/dashboard"
-              className="text-sm text-muted hover:text-gray-800 transition-colors"
-              aria-label="Back to dashboard"
+              className="text-sm text-text-muted hover:text-text transition-colors"
             >
               &larr; Dashboard
-            </a>
-            <span className="text-gray-300">|</span>
-            <h1 className="text-base font-semibold text-gray-900">
+            </Link>
+            <span className="text-border">|</span>
+            <h1 className="text-sm font-semibold text-text">
               {macroId ? 'Edit Macro' : 'New Macro'}
             </h1>
           </div>
           <div className="flex items-center gap-3">
             {user && (
-              <span className="text-xs text-muted">{user.email || user.id}</span>
+              <span className="text-xs text-text-faint hidden sm:block">{user.email || user.id}</span>
             )}
             <button
               onClick={() => setShortcutsOpen(true)}
               aria-label="Keyboard shortcuts"
               title="Keyboard shortcuts"
-              className="p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-md transition-colors"
+              className="p-1.5 text-text-faint hover:text-text hover:bg-bg-hover rounded-md transition-colors"
             >
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
@@ -216,13 +224,13 @@ export default function EditorPage() {
           {/* LEFT: Editor */}
           <div className="space-y-0">
             {/* Tab bar */}
-            <div className="flex border-b border-gray-200 bg-white rounded-t-lg">
+            <div className="flex border-b border-border bg-bg-surface rounded-t-xl">
               <button
                 onClick={() => setActiveTab('editor')}
                 className={`px-4 py-2.5 text-sm font-medium transition-colors
                   ${activeTab === 'editor'
                     ? 'text-primary border-b-2 border-primary'
-                    : 'text-muted hover:text-gray-700'}`}
+                    : 'text-text-muted hover:text-text'}`}
               >
                 Editor
               </button>
@@ -231,14 +239,14 @@ export default function EditorPage() {
                 className={`px-4 py-2.5 text-sm font-medium transition-colors
                   ${activeTab === 'examples'
                     ? 'text-primary border-b-2 border-primary'
-                    : 'text-muted hover:text-gray-700'}`}
+                    : 'text-text-muted hover:text-text'}`}
               >
                 Examples
               </button>
             </div>
 
             {/* Editor / Examples content */}
-            <div className="bg-white border border-t-0 border-gray-200 rounded-b-lg overflow-hidden">
+            <div className="bg-bg-surface border border-t-0 border-border rounded-b-xl overflow-hidden">
               {activeTab === 'editor' ? (
                 <div style={{ height: 500 }}>
                   <MonacoEditor
@@ -265,25 +273,25 @@ export default function EditorPage() {
             </div>
 
             {/* DSL reference */}
-            <details className="mt-3 bg-white border border-gray-200 rounded-lg">
-              <summary className="px-4 py-2.5 text-sm font-medium text-gray-700 cursor-pointer hover:bg-gray-50">
+            <details className="mt-3 card">
+              <summary className="text-sm font-medium text-text cursor-pointer hover:text-primary transition-colors">
                 Macro DSL Reference
               </summary>
-              <div className="px-4 pb-3 text-xs text-gray-600 space-y-1 font-mono">
-                <p><code className="text-primary">CHAT &lt;text&gt;</code> — Type text + Enter</p>
-                <p><code className="text-primary">KEY TAP|DOWN|UP &lt;key&gt;</code> — Keyboard input</p>
-                <p><code className="text-primary">MOUSE_MOVE &lt;x&gt; &lt;y&gt;</code> — Move cursor</p>
-                <p><code className="text-primary">MOUSE_CLICK left|right</code> — Mouse click</p>
-                <p><code className="text-primary">SCROLL &lt;dx&gt; &lt;dy&gt;</code> — Scroll wheel</p>
-                <p><code className="text-primary">DELAY &lt;ms&gt;</code> — Pause</p>
+              <div className="mt-3 pt-3 border-t border-border text-xs text-text-muted space-y-1.5 font-mono">
+                <p><code className="text-cyan">CHAT &lt;text&gt;</code> — Type text + Enter</p>
+                <p><code className="text-cyan">KEY TAP|DOWN|UP &lt;key&gt;</code> — Keyboard input</p>
+                <p><code className="text-cyan">MOUSE_MOVE &lt;x&gt; &lt;y&gt;</code> — Move cursor</p>
+                <p><code className="text-cyan">MOUSE_CLICK left|right</code> — Mouse click</p>
+                <p><code className="text-cyan">SCROLL &lt;dx&gt; &lt;dy&gt;</code> — Scroll wheel</p>
+                <p><code className="text-sand">DELAY &lt;ms&gt;</code> — Pause</p>
                 <p><code className="text-primary">LOOP &lt;n&gt;</code> — Repeat the whole macro n times</p>
-                <p><code className="text-muted"># comment</code> — Lines starting with # are ignored</p>
+                <p><code className="text-text-faint"># comment</code> — Lines starting with # are ignored</p>
               </div>
             </details>
           </div>
 
           {/* RIGHT: Controls */}
-          <div className="space-y-4">
+          <div className="space-y-3">
             <EditorHeader
               title={title}
               description={description}
@@ -300,6 +308,7 @@ export default function EditorPage() {
 
             <ActionButtons
               running={running}
+              saving={saving}
               onSave={handleSave}
               onRun={handleRun}
               onStop={handleStop}

@@ -64,16 +64,16 @@ export function ShortcutSettings({ bindings, onUpdate, onReset, open, onClose }:
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
       <div
         ref={dialogRef}
-        className="bg-white rounded-xl shadow-xl w-full max-w-md mx-4 overflow-hidden"
+        className="glass rounded-xl shadow-xl w-full max-w-md mx-4 overflow-hidden"
         role="dialog"
         aria-label="Keyboard shortcuts"
       >
-        <div className="flex items-center justify-between px-5 py-4 border-b border-gray-200">
-          <h2 className="text-sm font-semibold text-gray-900">Keyboard Shortcuts</h2>
+        <div className="flex items-center justify-between px-5 py-4 border-b border-border">
+          <h2 className="text-sm font-semibold text-text">Keyboard Shortcuts</h2>
           <button
             onClick={onClose}
             aria-label="Close shortcuts"
-            className="text-gray-400 hover:text-gray-600 transition-colors"
+            className="text-faint hover:text-text transition-colors"
           >
             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
@@ -85,15 +85,15 @@ export function ShortcutSettings({ bindings, onUpdate, onReset, open, onClose }:
           {bindings.map(b => (
             <div
               key={b.action}
-              className="flex items-center justify-between py-2.5 border-b border-gray-100 last:border-0"
+              className="flex items-center justify-between py-2.5 border-b border-border last:border-0"
             >
-              <span className="text-sm text-gray-700">{b.label}</span>
+              <span className="text-sm text-text">{b.label}</span>
               <button
                 onClick={() => setRecording(recording === b.action ? null : b.action)}
                 className={`px-3 py-1.5 text-xs font-mono rounded-md border transition-colors min-w-[100px] text-center
                   ${recording === b.action
-                    ? 'border-primary bg-primary/5 text-primary animate-pulse'
-                    : 'border-gray-200 bg-gray-50 text-gray-700 hover:border-gray-300 hover:bg-gray-100'
+                    ? 'border-primary bg-primary/10 text-primary animate-pulse'
+                    : 'border-border bg-surface text-text hover:border-border-light hover:bg-bg-hover'
                   }`}
               >
                 {recording === b.action ? 'Press keys...' : formatBinding(b)}
@@ -102,14 +102,14 @@ export function ShortcutSettings({ bindings, onUpdate, onReset, open, onClose }:
           ))}
         </div>
 
-        <div className="px-5 py-3 border-t border-gray-200 flex items-center justify-between">
+        <div className="px-5 py-3 border-t border-border flex items-center justify-between">
           <button
             onClick={() => { onReset(); setRecording(null) }}
-            className="text-xs text-muted hover:text-gray-700 transition-colors"
+            className="text-xs text-muted hover:text-text transition-colors"
           >
             Reset to defaults
           </button>
-          <p className="text-[10px] text-gray-400">Click a binding, then press your desired keys</p>
+          <p className="text-[10px] text-faint">Click a binding, then press your desired keys</p>
         </div>
       </div>
     </div>

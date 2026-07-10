@@ -90,12 +90,12 @@ export function MacroRecorder({
   if (!bridgeAvailable || !hotkeysSupported) return null
 
   return (
-    <div className="p-3 bg-white border border-gray-200 rounded-lg space-y-2">
+    <div className="card p-3 space-y-2">
       <div className="flex items-center justify-between">
-        <h3 className="text-xs font-semibold text-gray-700">Macro Recorder</h3>
+        <h3 className="text-xs font-semibold text-text">Macro Recorder</h3>
         {recording && (
-          <span className="flex items-center gap-1 text-[10px] text-red-600">
-            <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
+          <span className="flex items-center gap-1 text-[10px] text-danger">
+            <span className="w-2 h-2 rounded-full bg-danger animate-pulse" />
             Recording ({events.length} keys)
           </span>
         )}
@@ -105,8 +105,7 @@ export function MacroRecorder({
         {!recording ? (
           <button
             onClick={startRec}
-            className="flex-1 px-3 py-1.5 text-xs font-medium text-white bg-red-500 rounded-lg
-                       hover:bg-red-600 transition-colors flex items-center justify-center gap-1.5"
+            className="btn-danger flex-1 flex items-center justify-center gap-1.5"
           >
             <span className="w-2 h-2 rounded-full bg-white" />
             Record
@@ -114,8 +113,7 @@ export function MacroRecorder({
         ) : (
           <button
             onClick={stopRec}
-            className="flex-1 px-3 py-1.5 text-xs font-medium text-white bg-gray-700 rounded-lg
-                       hover:bg-gray-800 transition-colors flex items-center justify-center gap-1.5"
+            className="btn-ghost flex-1 flex items-center justify-center gap-1.5"
           >
             <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 24 24">
               <rect x="6" y="6" width="12" height="12" rx="1" />
@@ -127,21 +125,19 @@ export function MacroRecorder({
 
       {preview && (
         <div className="space-y-2">
-          <pre className="text-[10px] bg-gray-50 border border-gray-200 rounded p-2 max-h-32 overflow-auto font-mono whitespace-pre-wrap">
+          <pre className="text-[10px] bg-bg border border-border rounded p-2 max-h-32 overflow-auto font-mono whitespace-pre-wrap text-text">
             {preview}
           </pre>
           <div className="flex gap-2">
             <button
               onClick={() => { onInsert(preview); setPreview(null) }}
-              className="flex-1 px-3 py-1.5 text-xs font-medium text-white bg-primary rounded-lg
-                         hover:bg-primary-600 transition-colors"
+              className="btn-primary flex-1"
             >
               Insert into editor
             </button>
             <button
               onClick={() => setPreview(null)}
-              className="px-3 py-1.5 text-xs font-medium border border-gray-300 rounded-lg
-                         hover:bg-gray-50 transition-colors"
+              className="btn-ghost px-3 py-1.5 text-xs"
             >
               Discard
             </button>
@@ -149,7 +145,7 @@ export function MacroRecorder({
         </div>
       )}
 
-      <p className="text-[10px] text-gray-400">
+      <p className="text-[10px] text-faint">
         {recording
           ? 'Press keys in Minecraft — they will be captured. Click Stop when done.'
           : 'Record your keystrokes to auto-generate macro DSL.'}

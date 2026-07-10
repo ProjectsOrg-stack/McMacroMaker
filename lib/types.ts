@@ -14,6 +14,7 @@ export interface MacroStep {
 
 export interface Macro {
   id: string
+  user_id: string
   title: string
   description: string
   code: string

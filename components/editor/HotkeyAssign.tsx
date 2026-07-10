@@ -45,11 +45,11 @@ export function HotkeyAssign({ currentHotkey, onAssign, onClear, bridgeAvailable
   if (!bridgeAvailable) return null
 
   return (
-    <div className="p-3 bg-white border border-gray-200 rounded-lg space-y-2">
+    <div className="card p-3 space-y-2">
       <div className="flex items-center justify-between">
-        <h3 className="text-xs font-semibold text-gray-700">Global Hotkey</h3>
+        <h3 className="text-xs font-semibold text-text">Global Hotkey</h3>
         {!hotkeysSupported && (
-          <span className="text-[10px] text-amber-600">Restart bridge with npm install</span>
+          <span className="text-[10px] text-sand">Restart bridge with npm install</span>
         )}
       </div>
       {hotkeysSupported ? (
@@ -58,10 +58,10 @@ export function HotkeyAssign({ currentHotkey, onAssign, onClear, bridgeAvailable
             onClick={() => setListening(!listening)}
             className={`flex-1 px-3 py-1.5 text-xs font-mono rounded-md border transition-colors text-center
               ${listening
-                ? 'border-primary bg-primary/5 text-primary animate-pulse'
+                ? 'border-primary bg-primary/10 text-primary animate-pulse'
                 : currentHotkey
-                  ? 'border-gray-200 bg-gray-50 text-gray-700 hover:border-gray-300'
-                  : 'border-dashed border-gray-300 text-gray-400 hover:border-gray-400'
+                  ? 'border-border bg-surface text-text hover:border-border-light'
+                  : 'border-dashed border-border text-faint hover:border-border-light'
               }`}
           >
             {listening ? 'Press keys...' : currentHotkey ? formatHotkey(currentHotkey) : 'Click to assign'}
@@ -69,7 +69,7 @@ export function HotkeyAssign({ currentHotkey, onAssign, onClear, bridgeAvailable
           {currentHotkey && (
             <button
               onClick={onClear}
-              className="px-2 py-1.5 text-xs text-gray-400 hover:text-gray-600 transition-colors"
+              className="px-2 py-1.5 text-xs text-faint hover:text-text transition-colors"
               aria-label="Remove hotkey"
             >
               <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -79,12 +79,12 @@ export function HotkeyAssign({ currentHotkey, onAssign, onClear, bridgeAvailable
           )}
         </div>
       ) : (
-        <p className="text-[10px] text-gray-500">
-          Global hotkeys require <code className="bg-gray-100 px-1 rounded">node-global-key-listener</code>.
+        <p className="text-[10px] text-faint">
+          Global hotkeys require <code className="bg-bg px-1 rounded text-text">node-global-key-listener</code>.
           Reinstall the bridge to enable.
         </p>
       )}
-      <p className="text-[10px] text-gray-400">
+      <p className="text-[10px] text-faint">
         {currentHotkey
           ? 'Press this key combo from Minecraft to run the macro — no browser needed.'
           : 'Assign a key combo to trigger this macro from anywhere.'}

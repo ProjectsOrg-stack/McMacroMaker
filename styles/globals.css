@@ -2,6 +2,76 @@
 @tailwind components;
 @tailwind utilities;
 
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+
 html, body, #__next {
   height: 100%;
+}
+
+body {
+  background: #0C0E14;
+  color: #E0E4EC;
+}
+
+::selection {
+  background: rgba(59, 130, 246, 0.3);
+  color: #fff;
+}
+
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #2A3045;
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #363D54;
+}
+
+@layer components {
+  .btn-primary {
+    @apply px-5 py-2.5 text-sm font-medium text-white bg-primary rounded-lg
+           hover:bg-primary-hover hover:shadow-glow
+           focus:outline-none focus:ring-2 focus:ring-primary/40
+           transition-all duration-200 active:scale-[0.98];
+  }
+  .btn-ghost {
+    @apply px-5 py-2.5 text-sm font-medium text-text-muted border border-border rounded-lg
+           hover:text-text hover:border-border-light hover:bg-bg-hover
+           focus:outline-none focus:ring-2 focus:ring-primary/20
+           transition-all duration-200;
+  }
+  .btn-accent {
+    @apply px-5 py-2.5 text-sm font-medium text-white bg-accent rounded-lg
+           hover:bg-accent-hover hover:shadow-glow-accent
+           focus:outline-none focus:ring-2 focus:ring-accent/40
+           transition-all duration-200 active:scale-[0.98];
+  }
+  .btn-danger {
+    @apply px-5 py-2.5 text-sm font-medium text-white bg-danger rounded-lg
+           hover:bg-danger-hover hover:shadow-glow-danger
+           focus:outline-none focus:ring-2 focus:ring-danger/40
+           transition-all duration-200 active:scale-[0.98];
+  }
+  .card {
+    @apply bg-bg-surface border border-border rounded-xl p-5
+           transition-all duration-200;
+  }
+  .card-hover {
+    @apply card hover:-translate-y-0.5 hover:border-border-light hover:shadow-card;
+  }
+  .input-field {
+    @apply w-full px-3.5 py-2.5 text-sm text-text bg-bg-surface border border-border rounded-lg
+           placeholder:text-text-faint
+           focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/50
+           transition-all duration-200;
+  }
+  .glass {
+    @apply bg-bg-surface/80 backdrop-blur-xl border border-border;
+  }
 }

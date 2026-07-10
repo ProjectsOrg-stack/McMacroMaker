@@ -1,63 +1,102 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
-import { v4 as uuidv4 } from 'uuid'
+import { supabase } from '../lib/supabaseClient'
 import type { Macro } from '../lib/types'
-
-const macrosKey = (userId: string) => `macros:${userId}`
 
 export function useMacros(userId: string | undefined) {
   const [macros, setMacros] = useState<Macro[]>([])
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    if (!userId) return
-    try {
-      const raw = localStorage.getItem(macrosKey(userId)) || '[]'
-      setMacros(JSON.parse(raw))
-    } catch {
-      setMacros([])
+    if (!userId) { setLoading(false); return }
+
+    async function load() {
+      setLoading(true)
+      const { data, error } = await supabase
+        .from('macros')
+        .select('*')
+        .eq('user_id', userId)
+        .order('updated_at', { ascending: false })
+
+      if (!error && data) {
+        setMacros(data as Macro[])
+      }
+      setLoading(false)
     }
+    load()
   }, [userId])
 
-  const persist = useCallback((updated: Macro[]) => {
-    if (!userId) return
-    localStorage.setItem(macrosKey(userId), JSON.stringify(updated))
-    setMacros(updated)
-  }, [userId])
-
-  const saveMacro = useCallback((data: { id?: string; title: string; description: string; code: string }): Macro => {
-    const now = new Date().toISOString()
-    let updated: Macro[]
-    let saved: Macro
+  const saveMacro = useCallback(async (data: { id?: string; title: string; description: string; code: string }): Promise<Macro | null> => {
+    if (!userId) return null
 
     if (data.id) {
-      updated = macros.map(m => {
-        if (m.id === data.id) {
-          saved = { ...m, title: data.title, description: data.description, code: data.code, updated_at: now }
-          return saved!
-        }
-        return m
-      })
-      if (!saved!) {
-        saved = { id: data.id, title: data.title, description: data.description, code: data.code, created_at: now, updated_at: now }
-        updated = [...macros, saved]
+      const { data: updated, error } = await supabase
+        .from('macros')
+        .update({
+          title: data.title,
+          description: data.description,
+          code: data.code,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', data.id)
+        .eq('user_id', userId)
+        .select()
+        .single()
+
+      if (!error && updated) {
+        setMacros(prev => prev.map(m => m.id === updated.id ? updated as Macro : m))
+        return updated as Macro
       }
-    } else {
-      saved = { id: uuidv4(), title: data.title, description: data.description, code: data.code, created_at: now, updated_at: now }
-      updated = [...macros, saved]
     }
 
-    persist(updated)
-    return saved!
-  }, [macros, persist])
+    const { data: inserted, error } = await supabase
+      .from('macros')
+      .insert({
+        user_id: userId,
+        title: data.title,
+        description: data.description,
+        code: data.code,
+      })
+      .select()
+      .single()
 
-  const deleteMacro = useCallback((id: string) => {
-    persist(macros.filter(m => m.id !== id))
-  }, [macros, persist])
+    if (!error && inserted) {
+      setMacros(prev => [inserted as Macro, ...prev])
+      return inserted as Macro
+    }
 
-  const getMacro = useCallback((id: string): Macro | undefined => {
-    return macros.find(m => m.id === id)
-  }, [macros])
+    return null
+  }, [userId])
 
-  return { macros, saveMacro, deleteMacro, getMacro }
+  const deleteMacro = useCallback(async (id: string) => {
+    if (!userId) return
+    const { error } = await supabase
+      .from('macros')
+      .delete()
+      .eq('id', id)
+      .eq('user_id', userId)
+
+    if (!error) {
+      setMacros(prev => prev.filter(m => m.id !== id))
+    }
+  }, [userId])
+
+  const getMacro = useCallback(async (id: string): Promise<Macro | null> => {
+    if (!userId) return null
+    const cached = macros.find(m => m.id === id)
+    if (cached) return cached
+
+    const { data, error } = await supabase
+      .from('macros')
+      .select('*')
+      .eq('id', id)
+      .eq('user_id', userId)
+      .single()
+
+    if (!error && data) return data as Macro
+    return null
+  }, [userId, macros])
+
+  return { macros, loading, saveMacro, deleteMacro, getMacro }
 }
