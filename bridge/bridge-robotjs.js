@@ -7,9 +7,14 @@
 //   node bridge-robotjs.js
 
 const util = require('util');
-if (!util.isObject) {
-  util.isObject = function(arg) { return typeof arg === 'object' && arg !== null; };
-}
+if (!util.isObject) util.isObject = (arg) => typeof arg === 'object' && arg !== null;
+if (!util.isFunction) util.isFunction = (arg) => typeof arg === 'function';
+if (!util.isString) util.isString = (arg) => typeof arg === 'string';
+if (!util.isNumber) util.isNumber = (arg) => typeof arg === 'number';
+if (!util.isBoolean) util.isBoolean = (arg) => typeof arg === 'boolean';
+if (!util.isUndefined) util.isUndefined = (arg) => arg === undefined;
+if (!util.isNull) util.isNull = (arg) => arg === null;
+if (!util.isArray) util.isArray = Array.isArray;
 
 const WebSocket = require('ws');
 let robot
