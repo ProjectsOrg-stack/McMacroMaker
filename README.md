@@ -13,20 +13,22 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 
 ## Running the Bridge
 
-The bridge is a small Node.js WebSocket server that simulates keyboard/mouse input in your Minecraft client.
+The bridge is a small Node.js WebSocket server that sends real keyboard/mouse input to Minecraft (or whatever app is in the foreground).
 
-**One-liner install (macOS / Linux / Windows):**
+### One-command setup
 
-This downloads only the bridge folder — no need to clone the full repo:
+Open a terminal and paste this — it downloads only the bridge folder, installs dependencies, and starts it:
 
 ```bash
 npx degit ProjectsOrg-stack/McMacroMaker/bridge bridge && cd bridge && npm install && npm start
 ```
 
+You should see `Bridge listening at ws://127.0.0.1:8080` — go back to the editor and click **Check**.
+
 **Requirements:**
 - Node.js v18+ (v26 is supported)
-- macOS: `xcode-select --install` for build tools
-- Windows: Visual Studio C++ Build Tools if robotjs needs to compile
+- macOS: you may be prompted to run `xcode-select --install` for build tools
+- Windows: [VS Build Tools](https://visualstudio.microsoft.com/visual-cpp-build-tools/) if robotjs needs to compile
 
 **Already have the repo cloned?**
 
@@ -36,19 +38,27 @@ npm install
 npm start
 ```
 
-The bridge listens on `ws://127.0.0.1:8080` (localhost only).
+**To restart the bridge later** (it's already installed):
+
+```bash
+cd bridge && npm start
+```
 
 ### macOS Accessibility Permissions
 
-On macOS you must grant Accessibility permissions to the app running the bridge:
+On macOS you must grant Accessibility permissions so the bridge can simulate input:
 
 1. Open **System Settings > Privacy & Security > Accessibility**
 2. Add **Terminal** (or whichever app runs `node`) and toggle it on
 3. You may also need to enable **Input Monitoring** depending on macOS version
 
+### Important: Keep Minecraft focused
+
+The bridge sends real keyboard/mouse input to whatever window is active. **Keep Minecraft in the foreground** while macros run, or the input will go to the wrong app.
+
 ## Demo Mode
 
-You can test macros without installing the bridge by enabling **Demo mode** in the editor. Demo mode simulates execution in the browser with timestamped logs.
+You can test macros without installing the bridge by enabling **Demo mode** in the editor. Demo mode simulates execution in the browser with timestamped logs — no real input is sent.
 
 ## Macro DSL Reference
 
@@ -107,8 +117,10 @@ Tests use Vitest with jsdom. Coverage includes:
 | Problem | Solution |
 |---|---|
 | Bridge check shows "Not Available" | Make sure `npm start` is running in the bridge folder |
+| Bridge check shows "unknown message" | You have an old bridge version — delete the `bridge` folder and re-run the one-liner |
 | `robotjs` fails to install | Run `xcode-select --install` on macOS. On Windows, install VS Build Tools. |
 | Keyboard/mouse not working | Grant Accessibility permissions on macOS (System Settings > Privacy & Security) |
+| Input goes to wrong app | Keep Minecraft in the foreground (focused) while macros run |
 | `supabaseUrl is required` at build | This is expected without real Supabase credentials. The app works in demo mode without them. |
 
 ## Security & Anti-Cheat Warning
