@@ -11,6 +11,7 @@ declare class Bridge {
   disconnect(): void;
 
   onMessage(fn: BridgeMessageHandler): void;
+  offMessage(fn: BridgeMessageHandler): void;
 
   sendRaw(obj: any): Promise<void>;
   sendSequence(steps: Array<{ cmd: string; delay?: number }>): Promise<void>;

@@ -1,36 +1,43 @@
+export type BridgeMessageHandler = (msg: any) => void
+
 export class Bridge {
-  url = 'ws://127.0.0.1:8080'
+  url: string
   socket: WebSocket | null = null
-  messageHandlers: Array<(msg: any) => void> = []
+  messageHandlers: BridgeMessageHandler[] = []
+
+  constructor(url?: string) {
+    this.url = url || process.env.NEXT_PUBLIC_BRIDGE_URL || 'ws://127.0.0.1:8080'
+  }
 
   connect() {
     if (this.socket && this.socket.readyState === WebSocket.OPEN) return
     try {
       this.socket = new WebSocket(this.url)
-    } catch (e) {
+    } catch {
       this.socket = null
       return
     }
     this.socket.addEventListener('message', (ev) => {
-      const data = ev.data
-      for (const h of this.messageHandlers) h(data)
+      for (const h of this.messageHandlers) h(ev.data)
     })
     this.socket.addEventListener('close', () => { /* no-op */ })
     this.socket.addEventListener('error', () => { /* no-op */ })
   }
 
   disconnect() {
-    try {
-      this.socket?.close()
-    } catch {}
+    try { this.socket?.close() } catch {}
     this.socket = null
   }
 
-  onMessage(fn: (msg: any) => void) {
+  onMessage(fn: BridgeMessageHandler) {
     this.messageHandlers.push(fn)
   }
 
-  sendRaw(obj: any) {
+  offMessage(fn: BridgeMessageHandler) {
+    this.messageHandlers = this.messageHandlers.filter(h => h !== fn)
+  }
+
+  sendRaw(obj: any): Promise<void> {
     return new Promise<void>((resolve, reject) => {
       this.connect()
       if (!this.socket) return reject(new Error('No socket'))
@@ -54,10 +61,10 @@ export class Bridge {
   }
 
   stop() {
-    try { this.sendRaw({ type: 'stop' }) } catch (e) { /* ignore */ }
+    try { this.sendRaw({ type: 'stop' }) } catch { /* ignore */ }
   }
 
-  ping(timeoutMs = 1500) {
+  ping(timeoutMs = 1500): Promise<any> {
     return new Promise<any>((resolve, reject) => {
       let settled = false
       const onMsg = (raw: any) => {
@@ -66,30 +73,26 @@ export class Bridge {
           if (obj && obj.event === 'pong') {
             settled = true
             resolve(obj)
-            // remove this handler
-            this.messageHandlers = this.messageHandlers.filter(h => h !== onMsg)
+            this.offMessage(onMsg)
           }
-        } catch (e) {
-          // ignore
-        }
+        } catch { /* ignore */ }
       }
       this.onMessage(onMsg)
       this.sendRaw({ type: 'ping' }).catch(() => {
         if (!settled) {
           settled = true
-          this.messageHandlers = this.messageHandlers.filter(h => h !== onMsg)
+          this.offMessage(onMsg)
           reject(new Error('no socket'))
         }
       })
       setTimeout(() => {
         if (settled) return
         settled = true
-        this.messageHandlers = this.messageHandlers.filter(h => h !== onMsg)
+        this.offMessage(onMsg)
         reject(new Error('timeout'))
       }, timeoutMs)
     })
   }
 }
 
-// Provide a default export so consumers can import either style.
 export default Bridge
