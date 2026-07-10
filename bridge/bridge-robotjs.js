@@ -1,5 +1,6 @@
 // bridge-robotjs.js
 // Local WebSocket bridge that accepts a sequence of DSL commands and simulates mouse/keyboard.
+// Also supports global hotkey registration for running macros without the browser.
 // Usage:
 //   cd bridge
 //   npm install
@@ -13,13 +14,96 @@ try {
   console.error('robotjs failed to load:', e.message || e)
 }
 
+let keyListener = null
+try {
+  const { GlobalKeyboardListener } = require('node-global-key-listener')
+  keyListener = new GlobalKeyboardListener()
+} catch (e) {
+  console.error('node-global-key-listener failed to load:', e.message || e)
+  console.log('Global hotkeys will not be available. Run: npm install')
+}
+
 const wss = new WebSocket.Server({ port: 8080, host: '127.0.0.1' });
 console.log('Bridge listening at ws://127.0.0.1:8080 (localhost only)');
 
 let currentRun = { cancelled: false };
+const registeredHotkeys = new Map();
+let recording = false;
 
 function wait(ms) { return new Promise(r => setTimeout(r, ms)); }
 
+function broadcast(obj) {
+  const msg = JSON.stringify(obj)
+  wss.clients.forEach(ws => {
+    if (ws.readyState === WebSocket.OPEN) {
+      try { ws.send(msg) } catch {}
+    }
+  })
+}
+
+// --- Global hotkey listener ---
+if (keyListener) {
+  keyListener.addListener((e) => {
+    if (recording && e.state === 'DOWN') {
+      broadcast({
+        event: 'recordedKey',
+        key: e.name,
+        state: e.state,
+        alt: e.altKey,
+        ctrl: e.ctrlKey,
+        shift: e.shiftKey,
+        meta: e.metaKey,
+      })
+      return
+    }
+
+    if (e.state === 'DOWN') {
+      for (const [id, reg] of registeredHotkeys) {
+        const hk = reg.hotkey
+        if (
+          e.name?.toUpperCase() === hk.key?.toUpperCase() &&
+          !!e.ctrlKey === !!hk.ctrl &&
+          !!e.shiftKey === !!hk.shift &&
+          !!e.altKey === !!hk.alt &&
+          !!e.metaKey === !!hk.meta
+        ) {
+          console.log(`Hotkey triggered: ${id}`)
+          runHotkeyMacro(id, reg.steps)
+          return
+        }
+      }
+    }
+  })
+  console.log('Global hotkey listener active')
+}
+
+async function runHotkeyMacro(id, steps) {
+  if (!robot) {
+    broadcast({ event: 'error', error: 'robotjs not available', hotkeyId: id })
+    return
+  }
+  currentRun = { cancelled: false }
+  broadcast({ event: 'hotkeyStart', hotkeyId: id })
+
+  for (let i = 0; i < steps.length; i++) {
+    const step = steps[i]
+    if (currentRun.cancelled) {
+      broadcast({ event: 'stopped', hotkeyId: id, index: i })
+      break
+    }
+    broadcast({ event: 'stepStart', index: i, cmd: step.cmd, hotkeyId: id })
+    try {
+      await handleLine(step.cmd)
+      broadcast({ event: 'stepDone', index: i, cmd: step.cmd, hotkeyId: id })
+    } catch (e) {
+      broadcast({ event: 'error', index: i, error: String(e), hotkeyId: id })
+    }
+    if (step.delay) await wait(step.delay)
+  }
+  broadcast({ event: 'done', hotkeyId: id })
+}
+
+// --- WebSocket handler ---
 wss.on('connection', (ws) => {
   console.log('Client connected');
 
@@ -30,7 +114,14 @@ wss.on('connection', (ws) => {
       if (!msg) return;
 
       if (msg.type === 'ping') {
-        ws.send(JSON.stringify({ event: 'pong', ready: !!robot, platform: process.platform, note: robot ? 'robotjs loaded' : 'robotjs missing' }))
+        ws.send(JSON.stringify({
+          event: 'pong',
+          ready: !!robot,
+          platform: process.platform,
+          hotkeys: keyListener ? true : false,
+          registered: Array.from(registeredHotkeys.keys()),
+          note: robot ? 'robotjs loaded' : 'robotjs missing',
+        }))
         return
       }
 
@@ -38,6 +129,48 @@ wss.on('connection', (ws) => {
         currentRun.cancelled = true;
         ws.send(JSON.stringify({ event: 'stopped' }));
         return;
+      }
+
+      if (msg.type === 'register') {
+        const { id, hotkey, steps } = msg
+        if (!id || !hotkey || !steps) {
+          ws.send(JSON.stringify({ event: 'error', error: 'register requires id, hotkey, steps' }))
+          return
+        }
+        registeredHotkeys.set(id, { hotkey, steps })
+        console.log(`Registered hotkey: ${id} → ${JSON.stringify(hotkey)}`)
+        ws.send(JSON.stringify({ event: 'registered', id, hotkey }))
+        return
+      }
+
+      if (msg.type === 'unregister') {
+        registeredHotkeys.delete(msg.id)
+        console.log(`Unregistered hotkey: ${msg.id}`)
+        ws.send(JSON.stringify({ event: 'unregistered', id: msg.id }))
+        return
+      }
+
+      if (msg.type === 'listHotkeys') {
+        const list = []
+        for (const [id, reg] of registeredHotkeys) {
+          list.push({ id, hotkey: reg.hotkey })
+        }
+        ws.send(JSON.stringify({ event: 'hotkeyList', hotkeys: list }))
+        return
+      }
+
+      if (msg.type === 'startRecording') {
+        recording = true
+        console.log('Recording started')
+        ws.send(JSON.stringify({ event: 'recordingStarted' }))
+        return
+      }
+
+      if (msg.type === 'stopRecording') {
+        recording = false
+        console.log('Recording stopped')
+        ws.send(JSON.stringify({ event: 'recordingStopped' }))
+        return
       }
 
       if (msg.type === 'sequence' && Array.isArray(msg.steps)) {

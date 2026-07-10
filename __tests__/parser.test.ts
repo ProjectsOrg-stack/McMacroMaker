@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { parseLinesToSteps } from '../lib/parser'
+import { parseLinesToSteps, parseMacro } from '../lib/parser'
 
 describe('parseLinesToSteps', () => {
   it('parses basic commands', () => {
@@ -52,5 +52,35 @@ describe('parseLinesToSteps', () => {
     const steps = parseLinesToSteps('  CHAT hello  \n  KEY TAP e  ')
     expect(steps[0].cmd).toBe('CHAT hello')
     expect(steps[1].cmd).toBe('KEY TAP e')
+  })
+})
+
+describe('parseMacro', () => {
+  it('returns loopCount 1 by default', () => {
+    const { steps, loopCount } = parseMacro('CHAT hello')
+    expect(loopCount).toBe(1)
+    expect(steps).toHaveLength(1)
+  })
+
+  it('extracts LOOP count', () => {
+    const { steps, loopCount } = parseMacro('LOOP 5\nCHAT hello\nDELAY 100')
+    expect(loopCount).toBe(5)
+    expect(steps).toHaveLength(2)
+    expect(steps[0].cmd).toBe('CHAT hello')
+  })
+
+  it('ignores LOOP with zero or negative value', () => {
+    const { loopCount } = parseMacro('LOOP 0\nCHAT hello')
+    expect(loopCount).toBe(1)
+  })
+
+  it('is case-insensitive for LOOP', () => {
+    const { loopCount } = parseMacro('loop 3\nCHAT hello')
+    expect(loopCount).toBe(3)
+  })
+
+  it('uses last LOOP if multiple are specified', () => {
+    const { loopCount } = parseMacro('LOOP 2\nCHAT hello\nLOOP 10')
+    expect(loopCount).toBe(10)
   })
 })

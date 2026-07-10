@@ -85,6 +85,38 @@ export function useBridge(onLog?: (entry: LogEntry) => void) {
     return br.sendRaw(obj)
   }, [ensure])
 
+  const registerHotkey = useCallback(async (id: string, hotkey: any, steps: Array<{ cmd: string; delay?: number }>) => {
+    const br = ensure()
+    if (br.messageHandlers.length === 0) attachListener(br)
+    return br.sendRaw({ type: 'register', id, hotkey, steps })
+  }, [ensure, attachListener])
+
+  const unregisterHotkey = useCallback(async (id: string) => {
+    const br = ensure()
+    return br.sendRaw({ type: 'unregister', id })
+  }, [ensure])
+
+  const startRecording = useCallback(async () => {
+    const br = ensure()
+    if (br.messageHandlers.length === 0) attachListener(br)
+    return br.sendRaw({ type: 'startRecording' })
+  }, [ensure, attachListener])
+
+  const stopRecording = useCallback(async () => {
+    const br = ensure()
+    return br.sendRaw({ type: 'stopRecording' })
+  }, [ensure])
+
+  const addMessageListener = useCallback((fn: (msg: any) => void) => {
+    const br = ensure()
+    br.onMessage(fn)
+  }, [ensure])
+
+  const removeMessageListener = useCallback((fn: (msg: any) => void) => {
+    const br = ensure()
+    br.offMessage(fn)
+  }, [ensure])
+
   useEffect(() => {
     return () => {
       try { ref.current?.disconnect() } catch {}
@@ -100,6 +132,12 @@ export function useBridge(onLog?: (entry: LogEntry) => void) {
     runSequence,
     stop: stopExecution,
     sendRaw,
+    registerHotkey,
+    unregisterHotkey,
+    startRecording,
+    stopRecording,
+    addMessageListener,
+    removeMessageListener,
     bridgeInstance: ref.current,
   }
 }

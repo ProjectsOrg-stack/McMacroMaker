@@ -1,15 +1,28 @@
-import type { MacroStep } from './types'
+import type { MacroStep, ParsedMacro } from './types'
 
 export function parseLinesToSteps(codeText: string): MacroStep[] {
+  return parseMacro(codeText).steps
+}
+
+export function parseMacro(codeText: string): ParsedMacro {
   const lines = codeText.split('\n')
   const steps: MacroStep[] = []
+  let loopCount = 1
 
   for (const raw of lines) {
     const line = raw.trim()
     if (!line || line.startsWith('#')) continue
 
     const parts = line.split(/\s+/)
-    if (parts[0].toUpperCase() === 'DELAY') {
+    const cmd = parts[0].toUpperCase()
+
+    if (cmd === 'LOOP') {
+      const n = parseInt(parts[1] || '1', 10)
+      if (n > 0) loopCount = n
+      continue
+    }
+
+    if (cmd === 'DELAY') {
       const ms = parseInt(parts[1] || '0', 10) || 0
       steps.push({ cmd: `DELAY ${ms}`, delay: ms })
     } else {
@@ -17,7 +30,7 @@ export function parseLinesToSteps(codeText: string): MacroStep[] {
     }
   }
 
-  return steps
+  return { steps, loopCount }
 }
 
 export const DEFAULT_MACRO = `# My first macro

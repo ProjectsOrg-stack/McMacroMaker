@@ -33,6 +33,11 @@ export interface ShortcutBinding {
   meta: boolean
 }
 
+export interface ParsedMacro {
+  steps: MacroStep[]
+  loopCount: number
+}
+
 export type LogLevel = 'info' | 'error' | 'success' | 'warn'
 
 export interface LogEntry {

@@ -6,6 +6,7 @@
     "start": "node bridge-robotjs.js"
   },
   "dependencies": {
+    "node-global-key-listener": "^0.3.0",
     "robotjs": "^0.6.0",
     "ws": "^8.14.2"
   }

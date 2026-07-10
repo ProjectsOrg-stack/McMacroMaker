@@ -7,7 +7,7 @@ import { useAuth } from '../../components/AuthProvider'
 import { useBridge } from '../../hooks/useBridge'
 import { useMacros } from '../../hooks/useMacros'
 import { useShortcuts } from '../../hooks/useShortcuts'
-import { parseLinesToSteps, DEFAULT_MACRO } from '../../lib/parser'
+import { parseMacro, DEFAULT_MACRO } from '../../lib/parser'
 import type { LogEntry } from '../../lib/types'
 
 import { EditorHeader } from '../../components/editor/EditorHeader'
@@ -17,6 +17,8 @@ import { OnboardPanel } from '../../components/editor/OnboardPanel'
 import { ExecutionLog } from '../../components/editor/ExecutionLog'
 import { MacroExamplesTab } from '../../components/editor/MacroExamplesTab'
 import { ShortcutSettings } from '../../components/editor/ShortcutSettings'
+import { HotkeyAssign } from '../../components/editor/HotkeyAssign'
+import { MacroRecorder } from '../../components/editor/MacroRecorder'
 
 const MonacoEditor = dynamic(() => import('@monaco-editor/react'), { ssr: false })
 
@@ -38,6 +40,8 @@ export default function EditorPage() {
   const [showOnboard, setShowOnboard] = useState(false)
   const [activeTab, setActiveTab] = useState<'editor' | 'examples'>('editor')
   const [shortcutsOpen, setShortcutsOpen] = useState(false)
+  const [assignedHotkey, setAssignedHotkey] = useState<{ key: string; ctrl: boolean; shift: boolean; alt: boolean; meta: boolean } | null>(null)
+  const [hotkeysSupported, setHotkeysSupported] = useState(false)
   const loadedRef = useRef(false)
 
   const appendLog = useCallback((message: string, level: LogEntry['level'] = 'info') => {
@@ -67,8 +71,9 @@ export default function EditorPage() {
 
   async function handleCheckBridge() {
     try {
-      await bridge.checkBridge()
+      const pong = await bridge.checkBridge()
       setShowOnboard(false)
+      if (pong?.hotkeys) setHotkeysSupported(true)
     } catch {
       setShowOnboard(true)
     }
@@ -85,21 +90,25 @@ export default function EditorPage() {
   }
 
   async function handleRun() {
-    const steps = parseLinesToSteps(code)
+    const { steps, loopCount } = parseMacro(code)
     if (steps.length === 0) {
       appendLog('No steps to run (empty or all comments)', 'warn')
       return
     }
 
     setRunning(true)
-    appendLog('=== starting sequence ===', 'info')
+    const loopLabel = loopCount > 1 ? ` (${loopCount} loops)` : ''
+    appendLog(`=== starting sequence${loopLabel} ===`, 'info')
 
     if (demoMode) {
-      for (let i = 0; i < steps.length; i++) {
-        const s = steps[i]
-        appendLog(`> demo #${i}: ${s.cmd}`, 'info')
-        await new Promise(r => setTimeout(r, s.delay || 100))
-        appendLog(`< demo done #${i}`, 'success')
+      for (let loop = 0; loop < loopCount; loop++) {
+        if (loopCount > 1) appendLog(`--- loop ${loop + 1}/${loopCount} ---`, 'info')
+        for (let i = 0; i < steps.length; i++) {
+          const s = steps[i]
+          appendLog(`> demo #${i}: ${s.cmd}`, 'info')
+          await new Promise(r => setTimeout(r, s.delay || 100))
+          appendLog(`< demo done #${i}`, 'success')
+        }
       }
       appendLog('=== demo finished ===', 'success')
       setRunning(false)
@@ -114,7 +123,10 @@ export default function EditorPage() {
     }
 
     try {
-      await bridge.runSequence(steps)
+      for (let loop = 0; loop < loopCount; loop++) {
+        if (loopCount > 1) appendLog(`--- loop ${loop + 1}/${loopCount} ---`, 'info')
+        await bridge.runSequence(steps)
+      }
     } catch (e) {
       appendLog('Failed to run: ' + String(e), 'error')
       setRunning(false)
@@ -134,6 +146,27 @@ export default function EditorPage() {
     checkBridge: () => handleCheckBridge(),
     toggleDemo: () => setDemoMode(prev => !prev),
   })
+
+  async function handleAssignHotkey(hotkey: { key: string; ctrl: boolean; shift: boolean; alt: boolean; meta: boolean }) {
+    const { steps } = parseMacro(code)
+    const id = macroId || 'current'
+    try {
+      await bridge.registerHotkey(id, hotkey, steps)
+      setAssignedHotkey(hotkey)
+      appendLog(`Hotkey registered: press it from Minecraft to run`, 'success')
+    } catch {
+      appendLog('Failed to register hotkey with bridge', 'error')
+    }
+  }
+
+  async function handleClearHotkey() {
+    const id = macroId || 'current'
+    try {
+      await bridge.unregisterHotkey(id)
+      setAssignedHotkey(null)
+      appendLog('Hotkey removed', 'info')
+    } catch {}
+  }
 
   function handleInsertExample(exampleCode: string) {
     setCode(exampleCode)
@@ -243,6 +276,7 @@ export default function EditorPage() {
                 <p><code className="text-primary">MOUSE_CLICK left|right</code> — Mouse click</p>
                 <p><code className="text-primary">SCROLL &lt;dx&gt; &lt;dy&gt;</code> — Scroll wheel</p>
                 <p><code className="text-primary">DELAY &lt;ms&gt;</code> — Pause</p>
+                <p><code className="text-primary">LOOP &lt;n&gt;</code> — Repeat the whole macro n times</p>
                 <p><code className="text-muted"># comment</code> — Lines starting with # are ignored</p>
               </div>
             </details>
@@ -269,6 +303,24 @@ export default function EditorPage() {
               onSave={handleSave}
               onRun={handleRun}
               onStop={handleStop}
+            />
+
+            <HotkeyAssign
+              currentHotkey={assignedHotkey}
+              onAssign={handleAssignHotkey}
+              onClear={handleClearHotkey}
+              bridgeAvailable={bridge.status === 'available'}
+              hotkeysSupported={hotkeysSupported}
+            />
+
+            <MacroRecorder
+              bridgeAvailable={bridge.status === 'available'}
+              hotkeysSupported={hotkeysSupported}
+              onStartRecording={bridge.startRecording}
+              onStopRecording={bridge.stopRecording}
+              onInsert={(recorded) => { setCode(recorded); setActiveTab('editor') }}
+              onBridgeMessage={bridge.addMessageListener}
+              offBridgeMessage={bridge.removeMessageListener}
             />
 
             {showOnboard && (
